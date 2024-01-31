@@ -1,0 +1,61 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "mysql"
+    url      = env("DATABASE_URL")
+}
+
+enum Role {
+    USER
+    ADMIN
+}
+
+model Customer {
+    id          Int           @id @default(autoincrement())
+    role        Role          @default(USER)
+    name        String?
+    email       String        @unique
+    password    String
+    phone       String?
+    Room        Room[]
+    reservation Reservation[]
+}
+
+model Room {
+    id         Int      @id @default(autoincrement())
+    role       Role     @default(USER)
+    roomname   String?
+    type       String
+    status     String
+    price      String
+    customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    customerId Int      @map("customer_id")
+}
+
+model Reservation {
+    id           Int       @id @default(autoincrement())
+    role         Role      @default(USER)
+    amount       Int
+    roomID       String    @map("room_id")
+    checklnDate  DateTime
+    CheckOutDate DateTime
+    status       String
+    customer     Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    customerId   Int       @map("customer_id")
+    payment      Payment[]
+}
+
+model Payment {
+    id            Int         @id @default(autoincrement())
+    role          Role        @default(USER)
+    amount        Int
+    paymentData   DateTime
+    paymentMethod String
+    reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    reservationId Int         @map("reservation_id")
+}
